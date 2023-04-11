@@ -1,6 +1,8 @@
 package com.example.hive.utils.event.listeners;
 
 import com.example.hive.entity.Task;
+import com.example.hive.entity.TransactionLog;
+import com.example.hive.entity.User;
 import com.example.hive.exceptions.CustomException;
 import com.example.hive.service.implementation.NotificationServiceImpl;
 import com.example.hive.utils.event.WalletFundingEvent;
@@ -16,7 +18,7 @@ public class WalletFundingEventListener implements ApplicationListener<WalletFun
 
     @Override
     public void onApplicationEvent(WalletFundingEvent event) {
-        Task task = event.getTask();
+        var task = event.getTask();
 
         try {
             notificationService.walletFundingNotification(task);

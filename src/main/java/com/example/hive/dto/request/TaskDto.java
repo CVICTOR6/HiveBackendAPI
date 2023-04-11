@@ -24,5 +24,5 @@ public class TaskDto {
     private String taskDeliveryAddress;
     private Integer estimatedTime;
     private String taskDuration;
-    private Status status;
+    private String paymentLogId;
 }

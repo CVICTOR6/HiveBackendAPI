@@ -1,4 +1,4 @@
-package com.example.hive.utils.event;
+package com.example.hive.utils.event.listeners;
 
 import com.example.hive.entity.Task;
 import com.example.hive.entity.User;
@@ -17,5 +17,4 @@ public class TaskCreatedEvent extends ApplicationEvent {
         this.task = task;
         this.applicationUrl = applicationUrl;
     }
-
 }

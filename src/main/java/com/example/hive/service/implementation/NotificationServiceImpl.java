@@ -17,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -44,7 +45,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .user(tasker)
                 .title("Task Created " + "-> " + task.getJobType())
                 .body("Your task has been successfully created, kindly await an acceptance")
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now().toString())
                 .build();
         
         Notification savedNotification = notificationRepository.save(notification);
@@ -64,7 +65,7 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .user(doer)
                 .title("Task Acceptance!!!")
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now().toString())
                 .body("Congratulations! You have successfully accepted a task with the following details: \n"
                         + "Task type: " + task.getJobType() + "\n"
                         + "Task description: " + task.getTaskDescription() + "\n"
@@ -91,7 +92,7 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .user(tasker)
                 .title("Task Accepted!")
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now().toString())
                 .body("Congratulations! Your task has been successfully accepted by " + task.getDoer().getFullName() + "\n"
                         + "Task Details: \n"
                         + "Task type: " + task.getJobType() + "\n"
@@ -118,7 +119,7 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = Notification.builder()
                 .user(doer)
                 .title("Wallet Funded!")
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now().toString())
                 .body("Congratulations! Your wallet has been successfully funded by " + task.getDoer().getFullName() + "\n"
                         + "Thank you for using Hive!")
                 .build();
@@ -138,7 +139,12 @@ public class NotificationServiceImpl implements NotificationService {
         for(Notification notification : notifications) {
             NotificationResponseDto notificationResponseDto = new ModelMapper().map(notification, NotificationResponseDto.class);
             notificationResponseDto.setUserId(user.getUser_id().toString());
-            notificationResponseDto.setElapsedTime(EpochTime.getElapsedTime(notification.getCreatedAt()));
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+            LocalDateTime datetime = LocalDateTime.parse(notification.getCreatedAt(), formatter);
+
+
+            notificationResponseDto.setElapsedTime(EpochTime.getElapsedTime(datetime));
             notificationResponseDtos.add(notificationResponseDto);
         }
         return notificationResponseDtos;

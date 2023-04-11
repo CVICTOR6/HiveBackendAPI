@@ -37,6 +37,7 @@ public class JwtAuthTokenFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     log.info("I have verified {}", authenticationToken.getAuthorities().toString());
                     filterChain.doFilter(request, response);
+                    log.info("I have done filter chain");
                 } catch (Exception exception) {
                     exception.printStackTrace();
                     log.error("Error occurred {}", exception.getMessage());

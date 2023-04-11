@@ -46,7 +46,7 @@ public class HiveSecurityConfig {
                         "/actuator/**",
                         "/swagger-resources/**",
                         "/swagger-ui.html",
-                        "/user/**",
+                        "/api/v1/user/**",
                         "/transaction/**",
                         "/tasks/search?text=book",
                         "/tasks/search",

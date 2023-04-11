@@ -12,8 +12,8 @@ import java.security.Principal;
 public interface PaymentService {
 
 
-    PayStackResponse makePaymentToDoer(TaskerPaymentRequest taskerPaymentRequest, Principal principal) throws Exception;
 
+    PayStackResponse initiatePaymentAndSaveToPaymentLog(TaskerPaymentRequest taskerPaymentRequest, Principal principal) throws Exception;
 
-    VerifyTransactionResponse verifyAndCompletePayment(String reference) throws Exception;
+    VerifyTransactionResponse verifyAndCompletePayment(String reference , Principal principal) throws Exception;
 }

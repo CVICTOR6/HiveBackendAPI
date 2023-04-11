@@ -39,7 +39,9 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     public String passwordResetTokenMail(User user, String applicationUrl, String token) {
-        String url = applicationUrl + "/savePassword?token=" + token;
+//        String url = applicationUrl + "/savePassword?token=" + token;
+
+        String url = "http://localhost:3000/reset-password/" + token;
 
         log.info("Click the link to reset your password: {}", url);
 

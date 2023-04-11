@@ -1,5 +1,6 @@
 package com.example.hive.security.config;
 
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

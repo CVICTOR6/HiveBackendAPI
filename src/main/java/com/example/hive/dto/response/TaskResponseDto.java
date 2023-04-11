@@ -28,6 +28,5 @@ public class TaskResponseDto {
 //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private String taskDuration;
     private Status status;
-    private String tasker_id;
-    private String doer_id;
+    private String taskId;
 }

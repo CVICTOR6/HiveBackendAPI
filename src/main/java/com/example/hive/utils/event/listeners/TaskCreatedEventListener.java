@@ -5,7 +5,7 @@ import com.example.hive.entity.User;
 import com.example.hive.service.EmailService;
 import com.example.hive.service.implementation.NotificationServiceImpl;
 import com.example.hive.utils.EmailTemplates;
-import com.example.hive.utils.event.TaskCreatedEvent;
+import com.example.hive.utils.event.listeners.TaskCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.ApplicationListener;

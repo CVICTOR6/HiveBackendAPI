@@ -17,13 +17,16 @@ public class VerifyTransactionResponse {
 
     /**
      * this status is "true" if the request is successful and false if is not
-     * NOTE: This does not mean the transaction was successful, status holds that information
+     * NOTE: This does not mean the transaction was successful, status inside data holds that information
      */
     private String status;
     /**
      * information about the request, could be "verification successful" or "invalid key"
      */
     private String message;
+
+    // will be used to fill in the taskdto
+    private String paymentLogId;
 
     private Data data;
 

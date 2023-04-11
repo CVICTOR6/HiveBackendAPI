@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class TaskerPaymentRequest {
 
-    private String taskId;
+    private Double amount;
 
 }

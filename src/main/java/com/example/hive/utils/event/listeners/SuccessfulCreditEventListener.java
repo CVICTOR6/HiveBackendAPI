@@ -19,12 +19,11 @@ public class SuccessfulCreditEventListener implements ApplicationListener<Succes
     @Override
     public void onApplicationEvent(SuccessfulCreditEvent event) {
        var doer = event.getUser();
-       var taskTitle = event.getTransactionLog().getTask().getTaskDescription();
        var transactionLog = event.getTransactionLog();
 
         try {
-            emailService.sendEmail(EmailTemplates.createSuccessfulCreditEmail(doer, taskTitle));
-            emailService.sendEmail(EmailTemplates.createSuccessfulPaymentFromTaskerEmail(transactionLog.getTaskerDepositor(),taskTitle));
+//            emailService.sendEmail(EmailTemplates.createSuccessfulCreditEmail(doer, taskTitle));
+//            emailService.sendEmail(EmailTemplates.createSuccessfulPaymentFromTaskerEmail(transactionLog.getTaskerDepositor(),taskTitle));
 
         } catch (Exception e) {
             log.error(e.getMessage());

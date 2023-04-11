@@ -4,6 +4,7 @@ import com.example.hive.dto.request.ForgetPasswordDto;
 import com.example.hive.dto.request.ResetPasswordDto;
 import com.example.hive.dto.response.AppResponse;
 import com.example.hive.entity.User;
+import com.example.hive.exceptions.CustomException;
 import com.example.hive.service.implementation.PasswordServiceImpl;
 import com.example.hive.service.implementation.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,8 +27,9 @@ import java.util.UUID;
 
 @RestController
 @Slf4j
-@RequestMapping("/user")
+@RequestMapping("api/v1/user")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class UserController {
 
     private final UserServiceImpl userService;
@@ -48,8 +50,11 @@ public class UserController {
             String token = UUID.randomUUID().toString();
             passwordService.createPasswordResetTokenForUser(user.get(), token);
             url = passwordService.passwordResetTokenMail(user.get(), passwordService.applicationUrl(request), token);
+        } else {
+            throw new CustomException("User not found");
         }
         log.info("Sending a reset password link to {}", passwordDto.getEmail());
+        log.info(url);
         passwordService.sendEmail(passwordDto.getEmail(), url);
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/v1/user/forget_password").toUriString());
         return ResponseEntity.created(uri).body(AppResponse.buildSuccess(url));

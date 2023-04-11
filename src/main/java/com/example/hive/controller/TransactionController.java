@@ -6,6 +6,8 @@ import com.example.hive.dto.response.AppResponse;
 import com.example.hive.dto.response.PayStackResponse;
 import com.example.hive.dto.response.VerifyTransactionResponse;
 import com.example.hive.service.PaymentService;
+import com.example.hive.dto.response.WalletResponseDto;
+import com.example.hive.service.WalletService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,6 +28,7 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class TransactionController {
     private final PaymentService paymentService;
+    private final WalletService walletService;
 
     @PostMapping("/payment")
     @Operation(summary = "Make Payment to Doer via Paystack Gateway", responses = {
@@ -34,7 +37,7 @@ public class TransactionController {
                             schema = @Schema(implementation = ApiResponse.class)))})
     public ResponseEntity<AppResponse<PayStackResponse>> taskerInitiatesPayment(@RequestBody @Valid final TaskerPaymentRequest taskerPaymentRequest, Principal principal) throws Exception {
        // we need to make a call to the paystack api to make the payment and get the response
-        PayStackResponse response =  paymentService.makePaymentToDoer(taskerPaymentRequest, principal);
+        PayStackResponse response =  paymentService.initiatePaymentAndSaveToPaymentLog(taskerPaymentRequest, principal);
         return ResponseEntity.ok(AppResponse.buildSuccessTxn(response));
     }
 
@@ -43,12 +46,20 @@ public class TransactionController {
             @ApiResponse(responseCode = "200",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = ApiResponse.class)))})
-    public ResponseEntity<AppResponse<VerifyTransactionResponse>> verifyAndCompletePayment(@RequestParam String reference) throws Exception {
+    public ResponseEntity<AppResponse<VerifyTransactionResponse>> verifyAndCompletePayment(@RequestParam String reference, Principal principal) throws Exception {
         // we need to check the status of the payment and complete the transaction
         log.info("verifying- for :: [{}]", reference );
-        VerifyTransactionResponse response = paymentService.verifyAndCompletePayment(reference);
+        VerifyTransactionResponse response = paymentService.verifyAndCompletePayment(reference, principal);
         return ResponseEntity.ok(AppResponse.buildSuccessTxn(response));
     }
+
+
+    public ResponseEntity<AppResponse<WalletResponseDto>> viewDoerWallet(Principal principal) throws Exception {
+
+        WalletResponseDto response = walletService.getWalletByUser(principal);
+        return ResponseEntity.ok(AppResponse.buildSuccessTxn(response));
+    }
+
 
 
 }

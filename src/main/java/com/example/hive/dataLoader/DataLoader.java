@@ -166,19 +166,8 @@ public class DataLoader {
         user6.setRole(Role.DOER);
         user6.setAddress(address6);
 
-        User user7 = new User();
-        user6.setUser_id(UUID.randomUUID());
-        user6.setFullName("Stephen");
-        user6.setEmail("stevol2015@gmail.com");
-        user6.setPhoneNumber("07025090220");
-        user6.setValidId(String.valueOf(6));
-        user6.setPassword("Thastr@123");
-        user6.setIsVerified(true);
-        user6.setRole(Role.TASKER);
-        user6.setAddress(address6);
 
-
-        List<User> users = List.of(user,user2,user3,user4,user5,user6,user7);
+        List<User> users = List.of(user,user2,user3,user4,user5,user6);
 
         for (User u: users){
             if (userRepository.findByEmail(u.getEmail()).isEmpty()) {
