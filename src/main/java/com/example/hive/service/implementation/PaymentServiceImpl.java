@@ -55,7 +55,7 @@ public class PaymentServiceImpl implements PaymentService {
 
            PayStackResponse payStackResponse = payStackService.initTransaction(principal, payStackPaymentRequest);
 
-           // save to trasanction log to save the details of the payment
+           // save to transaction log to save the details of the payment
            saveToPaymentLog(payStackResponse, user, taskerPaymentRequest);
            return payStackResponse;
 

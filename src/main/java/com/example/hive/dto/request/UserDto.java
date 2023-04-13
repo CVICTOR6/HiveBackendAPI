@@ -1,6 +1,6 @@
 package com.example.hive.dto.request;
 
-import com.example.hive.entity.Address;
+//import com.example.hive.entity.Address;
 import com.example.hive.entity.Task;
 import com.example.hive.enums.Role;
 import jakarta.validation.constraints.Email;
@@ -20,7 +20,7 @@ public class UserDto {
     private String email;
     private String phoneNumber;
     private String validId;
-    private Address address;
+    private String address;
     private String password;
     private Boolean isVerified;
     private Role role;

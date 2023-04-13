@@ -7,8 +7,12 @@ import com.example.hive.entity.*;
 import com.example.hive.exceptions.ResourceNotFoundException;
 import com.example.hive.repository.*;
 import com.example.hive.service.UserService;
+import com.example.hive.utils.FileUploadUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import com.example.hive.entity.User;
 import com.example.hive.enums.Role;
@@ -22,12 +26,13 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
-import java.util.Optional;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -36,7 +41,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
-    private final AddressRepository addressRepository;
+//    private final AddressRepository addressRepository;
 
     private final ApplicationEventPublisher eventPublisher;
     private final PasswordEncoder passwordEncoder;
@@ -46,6 +51,7 @@ public class UserServiceImpl implements UserService {
 
     private final WalletRepository walletRepository;
     private final ModelMapper modelMapper;
+    ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public Optional<User> findUserByEmail(String email) {
@@ -62,7 +68,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserRegistrationResponseDto registerUser(UserRegistrationRequestDto registrationRequestDto, HttpServletRequest request) {
+    public UserRegistrationResponseDto registerUser(UserRegistrationRequestDto registrationRequestDto, HttpServletRequest request) throws IOException {
         log.info("register user and create account");
 
         if (doesUserAlreadyExist(registrationRequestDto.getEmail())) {
@@ -149,17 +155,23 @@ public class UserServiceImpl implements UserService {
     }
     //HELPER METHODS
 
-    private User saveNewUser(UserRegistrationRequestDto registrationRequestDto) {
+    private User saveNewUser(UserRegistrationRequestDto registrationRequestDto) throws IOException {
         User newUser = new User();
         Role role = registrationRequestDto.getRole();
-        Address address = registrationRequestDto.getAddress();
-        addressRepository.save(address);
 
         BeanUtils.copyProperties(registrationRequestDto, newUser);
         log.info("user has a role of {}",registrationRequestDto.getRole().toString());
         newUser.addRole(role);
         log.info("user now has a role of {}",newUser.getRoles().toString());
         newUser.setPassword(passwordEncoder.encode(registrationRequestDto.getPassword()));
+
+        String fileName = StringUtils.cleanPath(Objects.requireNonNull(registrationRequestDto.getValidId().getOriginalFilename()));
+        String fileExtension = FilenameUtils.getExtension(fileName);
+        String newFileName = UUID.randomUUID().toString() + "." + fileExtension;
+        String uploadDir = "./uploads/";
+        String url = FileUploadUtil.saveFile(uploadDir, newFileName, registrationRequestDto.getValidId());
+
+        newUser.setValidId(url);
 
 
         return userRepository.save(newUser);
@@ -173,4 +185,13 @@ public class UserServiceImpl implements UserService {
     private static String getVerificationUrl(HttpServletRequest request) {
         return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath() + "/auth";
     }
+
+//    private static Address mapToAddress(String addressStr) {
+//        String[] parts = addressStr.split(", ");
+//        return Address.builder()
+//                .street(parts[0])
+//                .city(parts[1])
+//                .state(parts[2])
+//                .build();
+//    }
 }

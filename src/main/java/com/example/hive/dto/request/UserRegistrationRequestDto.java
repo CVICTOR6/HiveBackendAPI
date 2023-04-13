@@ -1,20 +1,21 @@
 package com.example.hive.dto.request;
 
-import com.example.hive.entity.Address;
+//import com.example.hive.entity.Address;
+
 import com.example.hive.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+//@Builder
+//@AllArgsConstructor
+//@NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown=true)
 public class UserRegistrationRequestDto {
 
@@ -33,7 +34,7 @@ public class UserRegistrationRequestDto {
 
     //Interface Annotation and Validator to create custom Annotation
 
-    private String confirmPassword;
+//    private String confirmPassword;
 
 
     @NotBlank(message = "phoneNumber cannot be empty")
@@ -43,10 +44,12 @@ public class UserRegistrationRequestDto {
     //    @NotBlank(message = "role field cannot be empty")
     private Role role;
 
-    @NotBlank(message = "validId field cannot be empty")
-    private String validId;
+//    @NotBlank(message = "validId field cannot be empty")
+    @JsonIgnore
+    private MultipartFile validId;
+    private String validIdUrl;
 
     //    @NotBlank(message = "address field cannot be null")
-    private Address address;
+    private String address;
 
 }

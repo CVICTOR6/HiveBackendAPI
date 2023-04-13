@@ -13,10 +13,12 @@ import com.example.hive.security.TokenResponse;
 import com.example.hive.service.EmailService;
 import com.example.hive.service.UserService;
 import com.example.hive.utils.EmailTemplates;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +27,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 import static com.example.hive.constant.SecurityConstants.PASSWORD_NOT_MATCH_MSG;
 import static com.example.hive.utils.StringUtil.doesBothStringMatch;
@@ -61,8 +68,9 @@ public class AuthController {
     }
 
     @PostMapping(path = "/register")
-    public ResponseEntity<AppResponse<?>> registerUser(@RequestBody @Valid UserRegistrationRequestDto registrationRequestDto,HttpServletRequest request) {
+    public ResponseEntity<AppResponse<?>> registerUser(@RequestBody @Valid UserRegistrationRequestDto registrationRequestDto,HttpServletRequest request) throws IOException {
         log.info("controller register: register user :: [{}] ::", registrationRequestDto.getEmail());
+
         validateUserRegistration(registrationRequestDto);
         UserRegistrationResponseDto response = userService.registerUser(registrationRequestDto, request);
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/v1/auth/register").toUriString());
@@ -71,9 +79,9 @@ public class AuthController {
 
     private void validateUserRegistration(UserRegistrationRequestDto registrationRequestDto) {
         log.info("validating user registration request for email :: {}", registrationRequestDto.getEmail());
-        if (!doesBothStringMatch(registrationRequestDto.getConfirmPassword(), registrationRequestDto.getPassword())) {
-            throw new CustomException(PASSWORD_NOT_MATCH_MSG, HttpStatus.BAD_REQUEST);
-        }
+//        if (!doesBothStringMatch(registrationRequestDto.getConfirmPassword(), registrationRequestDto.getPassword())) {
+//            throw new CustomException(PASSWORD_NOT_MATCH_MSG, HttpStatus.BAD_REQUEST);
+//        }
         List<String> roleEnum = List.of("TASKER", "DOER");
 
         String role = String.valueOf(registrationRequestDto.getRole());
