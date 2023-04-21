@@ -40,7 +40,7 @@ public class TransactionLog extends AuditEntity {
     private TransactionStatus transactionStatus;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    private User doer;
+    private User user;
 
 
 }

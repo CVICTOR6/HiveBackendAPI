@@ -6,12 +6,12 @@ import com.example.hive.dto.request.TaskDto;
 import com.example.hive.dto.response.AppResponse;
 import com.example.hive.dto.response.TaskResponseDto;
 import com.example.hive.entity.User;
+import com.example.hive.enums.Status;
 import com.example.hive.exceptions.ResourceNotFoundException;
 import com.example.hive.repository.UserRepository;
 import com.example.hive.service.TaskService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jdk.jfr.Frequency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +35,6 @@ public class TaskController {
     }
 
     @PostMapping("/")
-//    @PreAuthorize("hasRole('TASKER')")
     public ResponseEntity<AppResponse<TaskResponseDto>> createTask(@Valid @RequestBody TaskDto taskDto, Principal principal,HttpServletRequest request) {
         String email = principal.getName();
         User currentUser = userRepository.findByEmail(email)
@@ -175,6 +174,45 @@ public class TaskController {
     ) {
         return ResponseEntity.ok(taskService.searchTasksBy(text, pageNo, pageSize, sortBy, sortDir));
     }
+
+
+    @GetMapping("/new_task")
+    public ResponseEntity<AppResponse<Object>> getAllNewTasks(
+            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
+    ) {
+        var tasksFound = taskService.findAll(pageNo, pageSize, sortBy, sortDir);
+
+        var newTasks = tasksFound.stream()
+                .filter(task -> task.getStatus().equals(Status.NEW)).toList();
+
+        return ResponseEntity.status(200).body(AppResponse.builder().statusCode("00").isSuccessful(true).result(newTasks).build());
+    }
+
+
+    @GetMapping("/tasker/")
+    public ResponseEntity<AppResponse<Object>> getAllTasksByTaskerAndStatus(Principal principal, @RequestParam(value = "status") String status) {
+        try {
+            String email = principal.getName();
+            User currentUser = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            List<TaskResponseDto> tasks = taskService.getTasksByTaskerAndStatus(currentUser,status);
+            AppResponse<Object> appResponse = AppResponse.builder()
+                    .statusCode(ResponseStatus.SUCCESSFUL.getCode())
+                    .result(tasks)
+                    .message(ResponseStatus.SUCCESSFUL.getMessage())
+                    .isSuccessful(true)
+                    .build();
+            return new ResponseEntity<>(appResponse, HttpStatus.OK);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new ResponseEntity<>(new AppResponse<>(), HttpStatus.INTERNAL_SERVER_ERROR);
+
+    }
+
 
 
 

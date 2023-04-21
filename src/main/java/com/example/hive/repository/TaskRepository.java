@@ -31,5 +31,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     @Query("SELECT t FROM Task t WHERE t.doer = :doer AND t.status = 'COMPLETED'")
     List<Task> findCompletedTasksByDoer(@Param("doer") User doer);
+
+    List<Task> findAllByTaskerAndStatus(User currentUser, Status valueOf);
 }
 

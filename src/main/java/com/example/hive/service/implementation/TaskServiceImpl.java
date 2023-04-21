@@ -1,6 +1,5 @@
 package com.example.hive.service.implementation;
 
-import com.example.hive.constant.TransactionStatus;
 import com.example.hive.dto.request.TaskDto;
 import com.example.hive.dto.response.AppResponse;
 import com.example.hive.dto.response.TaskResponseDto;
@@ -10,14 +9,10 @@ import com.example.hive.enums.Status;
 import com.example.hive.exceptions.BadRequestException;
 import com.example.hive.exceptions.CustomException;
 import com.example.hive.exceptions.ResourceNotFoundException;
-import com.example.hive.repository.EscrowWalletRepository;
-import com.example.hive.repository.PaymentLogRepository;
-import com.example.hive.repository.TaskRepository;
-import com.example.hive.repository.UserRepository;
+import com.example.hive.repository.*;
 import com.example.hive.service.TaskService;
 import com.example.hive.utils.event.TaskAcceptedEvent;
 import com.example.hive.utils.event.listeners.TaskCreatedEvent;
-import lombok.AllArgsConstructor;
 import com.example.hive.service.WalletService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +22,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,6 +35,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
+    private final WalletRepository walletRepository;
     private final EscrowWalletRepository escrowWalletRepository;
     private final PaymentLogRepository paymentLogRepository;
     private final TaskRepository taskRepository;
@@ -57,13 +54,12 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException("User is not a TASKER");
         }
 
-//       check if task has been paid for , if yes create an escrow wallet
-        PaymentLog paymentLog = paymentLogRepository.findById(taskDto.getPaymentLogId())
-                .orElseThrow( () -> new ResourceNotFoundException("Payment Reference not found"));
+//       validate taskRequest , if yes create an escrow wallet
+        Wallet wallet = walletRepository.findByUser(user).orElseThrow(() -> new ResourceNotFoundException("Wallet not found"));
 
-         validateTaskRequest(taskDto, paymentLog);
+        checkIfWalletBalanceisEnough(taskDto, wallet);
 
-        EscrowWallet escrowWallet = createAndSaveEscrowWallet(paymentLog);
+        EscrowWallet escrowWallet = createAndTransferFundsToEscrowWallet(taskDto.getBudgetRate(),wallet);
 
         Task task = Task.builder()
                 .jobType(taskDto.getJobType())
@@ -81,7 +77,6 @@ public class TaskServiceImpl implements TaskService {
 
         Task savedTask = taskRepository.save(task);
 
-        paymentLog.setHasBeenUsedToCreateTask(true);
         escrowWallet.setTask(savedTask);
         escrowWalletRepository.save(escrowWallet);
         eventPublisher.publishEvent(new TaskCreatedEvent(user, savedTask, applicationUrl(request)));
@@ -246,6 +241,13 @@ public class TaskServiceImpl implements TaskService {
         throw new BadRequestException("Something Went wrong");
     }
 
+    @Override
+    public List<TaskResponseDto> getTasksByTaskerAndStatus(User currentUser, String status) {
+     List<Task>  tasks = taskRepository.findAllByTaskerAndStatus(currentUser,Status.valueOf(status.toUpperCase()));
+
+        return tasks.stream().map(task -> modelMapper.map(task, TaskResponseDto.class)).collect(Collectors.toList());
+    }
+
     private void creditTheDoerWalletFromEscrowWallet(EscrowWallet escrowWallet, User doer, Task task) {
 
         //check if the task has been paid for
@@ -276,31 +278,29 @@ public class TaskServiceImpl implements TaskService {
         return task.getStatus().equals(Status.ONGOING);
     }
 
-    private EscrowWallet createAndSaveEscrowWallet(PaymentLog paymentLog) {
+    private EscrowWallet createAndTransferFundsToEscrowWallet(BigDecimal amount, Wallet wallet) {
 
+        if (walletService.debitTaskerWalletToEscrow(wallet, amount)) {
 
-        EscrowWallet escrowWallet = new EscrowWallet();
+            EscrowWallet escrowWallet = new EscrowWallet();
 
-        escrowWallet.setEscrowAmount(paymentLog.getAmount());
+            escrowWallet.setEscrowAmount(amount);
 
-        escrowWalletRepository.save(escrowWallet);
+            escrowWalletRepository.save(escrowWallet);
 
-        return escrowWallet;
+            return escrowWallet;
+
+        } else {
+            throw new BadRequestException("Insufficient funds");
+        }
 
     }
 
-    private static void validateTaskRequest(TaskDto taskDto, PaymentLog paymentLog) {
-        if (!paymentLog.getTransactionStatus().equals(TransactionStatus.SUCCESS))
-            throw new BadRequestException("Payment was not successful");
+    private static void checkIfWalletBalanceisEnough(TaskDto taskDto, Wallet wallet) {
 
-        if (paymentLog.getHasBeenUsedToCreateTask()) {
-            throw new BadRequestException("Payment has been used to create a task");
+        if (taskDto.getBudgetRate().compareTo(wallet.getAccountBalance()) > 0){
+            throw new BadRequestException("Insufficient funds");
         }
-
-        log.info("paymentlog {} and taskdto {}", paymentLog.getAmount(), taskDto.getBudgetRate());
-
-        if (paymentLog.getAmount().compareTo(taskDto.getBudgetRate())!=0)
-            throw new BadRequestException("Wrong amount set in Task Budget Rate");
     }
 }
 

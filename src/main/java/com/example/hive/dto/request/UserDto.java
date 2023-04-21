@@ -19,7 +19,7 @@ public class UserDto {
     @Email
     private String email;
     private String phoneNumber;
-    private String validId;
+//    private String validId;
     private String address;
     private String password;
     private Boolean isVerified;

@@ -49,12 +49,15 @@
 			<version>1.6.14</version>
 		</dependency>
 
+
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.11.0</version>
 		</dependency>
 
+=======
+>>>>>>> 0ec47aa4727f4f792a43d196f00270197d67c199
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
@@ -65,6 +68,13 @@
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -144,7 +154,21 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>3.3.1</version>
+				<configuration>
+					<from>
+						<image>eclipse-temurin:19.0.2_7-jdk-alpine</image>
+					</from>
+					<to>
+						<image>registry.hub.docker.com/devlonk/hive</image>
+					</to>
+				</configuration>
+			</plugin>
 		</plugins>
+		<finalName>hive</finalName>
 	</build>
 
 </project>

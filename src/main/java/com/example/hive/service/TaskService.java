@@ -4,7 +4,6 @@ import com.example.hive.dto.request.TaskDto;
 import com.example.hive.dto.response.AppResponse;
 import com.example.hive.dto.response.TaskResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.RequestParam;
 import com.example.hive.entity.User;
 import java.security.Principal;
 import java.util.List;
@@ -37,4 +36,6 @@ public AppResponse<TaskResponseDto> createTask(TaskDto taskDto, User user, HttpS
     TaskResponseDto doerCompletesTask(User currentUser, String taskId);
 
     TaskResponseDto taskerApprovesCompletedTask(User currentUser, String taskId);
+
+    List<TaskResponseDto> getTasksByTaskerAndStatus(User currentUser, String status);
 }

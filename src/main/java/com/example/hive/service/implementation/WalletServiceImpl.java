@@ -54,7 +54,7 @@ public class WalletServiceImpl implements WalletService {
 
             TransactionLog transactionLog = new TransactionLog ();
             transactionLog.setAmount(creditAmount);
-            transactionLog.setDoer(doer);
+            transactionLog.setUser(doer);
             transactionLog.setTransactionType(TransactionType.DEPOSIT);
             transactionLog.setTransactionStatus(TransactionStatus.SUCCESS);
 
@@ -68,13 +68,70 @@ public class WalletServiceImpl implements WalletService {
 
     }
 
+
     @Override
     public WalletResponseDto getWalletByUser(Principal principal) {
 
         //get the user from the princial
-        User doer = userRepository.findByEmail(principal.getName()).get();
-        Wallet getWallet = walletRepository.findByUser(doer).orElseThrow(() -> new RuntimeException("Wallet not found"));
+        User user = userRepository.findByEmail(principal.getName()).get();
+        Wallet getWallet = walletRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Wallet not found"));
         return new WalletResponseDto(getWallet.getAccountBalance());
+    }
+
+    @Override
+    public boolean fundTaskerWallet(User tasker, BigDecimal amountToFund) {
+        log.info("Crediting tasker wallet{}", tasker.getFullName()) ;
+        //check role of user
+        if (!tasker.getRole().equals(Role.TASKER)) {
+            throw new CustomException("User is not a tasker");
+        }
+        else {
+            //check if user has a wallet
+            Wallet wallet =  walletRepository.findByUser(tasker).orElseThrow(() -> new CustomException("User does not have a wallet"));
+            log.info("I found wallet balance of {}", wallet.getAccountBalance()) ;
+
+            if (wallet.getAccountBalance() == null) {wallet.setAccountBalance(amountToFund);}
+
+            //credit wallet
+            else { wallet.setAccountBalance(wallet.getAccountBalance().add(amountToFund));}
+            log.info("NOW I found wallet balance of {}", wallet.getAccountBalance()) ;
+
+            TransactionLog transactionLog = new TransactionLog ();
+            transactionLog.setAmount(amountToFund);
+            transactionLog.setUser(tasker);
+            transactionLog.setTransactionType(TransactionType.DEPOSIT);
+            transactionLog.setTransactionStatus(TransactionStatus.SUCCESS);
+
+            transactionLogRepository.save(transactionLog);
+            eventPublisher.publishEvent(new SuccessfulCreditEvent(tasker, transactionLog));
+
+            return true;
+
+        }
+    }
+
+    @Override
+    public boolean debitTaskerWalletToEscrow(Wallet wallet, BigDecimal amount) {
+        log.info("Debiting tasker wallet{}", wallet.getUser().getFullName()) ;
+        //check role of user
+        if (!wallet.getUser().getRole().equals(Role.TASKER)) {
+            throw new CustomException("User is not a tasker role");
+        }
+        else {
+            //check if user has a wallet
+            Wallet getWallet =  walletRepository.findByUser(wallet.getUser()).orElseThrow(() -> new CustomException("User does not have a wallet"));
+            log.info("I found wallet balance of {}", getWallet.getAccountBalance()) ;
+
+            if (getWallet.getAccountBalance() == null) {throw new CustomException("Insufficient funds");}
+
+            //debit wallet for task creation
+            else { getWallet.setAccountBalance(getWallet.getAccountBalance().subtract(amount));}
+            log.info("NOW I found wallet balance of {}", getWallet.getAccountBalance()) ;
+
+            walletRepository.save(wallet);
+            return true;
+
+        }
     }
 
 

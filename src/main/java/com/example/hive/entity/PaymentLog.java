@@ -1,7 +1,6 @@
 package com.example.hive.entity;
 
 import com.example.hive.constant.TransactionStatus;
-import com.example.hive.constant.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -37,5 +36,4 @@ public class PaymentLog extends AuditEntity{
     @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private User taskerDepositor;
 
-    private Boolean hasBeenUsedToCreateTask = false;
 }

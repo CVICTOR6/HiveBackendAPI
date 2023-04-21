@@ -75,9 +75,9 @@ public class UserServiceImpl implements UserService {
             throw new CustomException("User already exist", HttpStatus.FORBIDDEN);
         }
         User newUser = saveNewUser(registrationRequestDto);
-        //if user is a doer , create a wallet account
+        //reate a wallet account for both doer and tasker
 
-        if (newUser.getRole().equals(Role.DOER)){ createWalletAccount(newUser);}
+        createWalletAccount(newUser);
 
         // generateToken and Save to token repo, send email also
         eventPublisher.publishEvent(new RegistrationCompleteEvent(
@@ -118,8 +118,8 @@ public class UserServiceImpl implements UserService {
         if (verificationToken.getExpirationTime().getTime() - cal.getTime().getTime() > 0 ) {
             user.setIsVerified(true);
             userRepository.save(user);
-            // activate the wallet of doer account
-           if(user.getRole().equals(Role.DOER)){activateWallet(user);}
+            // activate the wallet
+            activateWallet(user);
             verificationTokenRepository.delete(verificationToken);
             status = true;
         }
@@ -155,7 +155,8 @@ public class UserServiceImpl implements UserService {
     }
     //HELPER METHODS
 
-    private User saveNewUser(UserRegistrationRequestDto registrationRequestDto) throws IOException {
+//    private User saveNewUser(UserRegistrationRequestDto registrationRequestDto) throws IOException {
+    private User saveNewUser(UserRegistrationRequestDto registrationRequestDto)  {
         User newUser = new User();
         Role role = registrationRequestDto.getRole();
 
@@ -165,13 +166,13 @@ public class UserServiceImpl implements UserService {
         log.info("user now has a role of {}",newUser.getRoles().toString());
         newUser.setPassword(passwordEncoder.encode(registrationRequestDto.getPassword()));
 
-        String fileName = StringUtils.cleanPath(Objects.requireNonNull(registrationRequestDto.getValidId().getOriginalFilename()));
-        String fileExtension = FilenameUtils.getExtension(fileName);
-        String newFileName = UUID.randomUUID().toString() + "." + fileExtension;
-        String uploadDir = "./uploads/";
-        String url = FileUploadUtil.saveFile(uploadDir, newFileName, registrationRequestDto.getValidId());
-
-        newUser.setValidId(url);
+//        String fileName = StringUtils.cleanPath(Objects.requireNonNull(registrationRequestDto.getValidId().getOriginalFilename()));
+//        String fileExtension = FilenameUtils.getExtension(fileName);
+//        String newFileName = UUID.randomUUID().toString() + "." + fileExtension;
+//        String uploadDir = "./uploads/";
+//        String url = FileUploadUtil.saveFile(uploadDir, newFileName, registrationRequestDto.getValidId());
+//
+//        newUser.setValidId(url);
 
 
         return userRepository.save(newUser);

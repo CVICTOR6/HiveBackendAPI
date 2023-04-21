@@ -16,10 +16,10 @@ jobs:
       matrix:
         java-version: [17]
 
-    env:
-      DB_DATABASE: hivedb
-      DB_USER: root
-      DB_PASSWORD: root
+#    env:
+#      DB_DATABASE: hivedb
+#      DB_USER: root
+#      DB_PASSWORD: root
 
     steps:
       - uses: actions/checkout@v3
@@ -30,10 +30,10 @@ jobs:
           distribution: 'adopt'
           cache: maven
 
-      - name: Set up MySQL
-        run: |
-          sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+#      - name: Set up MySQL
+#        run: |
+#          sudo /etc/init.d/mysql start
+#          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       - name: Build
         run: mvn --batch-mode -DskipTests package
 

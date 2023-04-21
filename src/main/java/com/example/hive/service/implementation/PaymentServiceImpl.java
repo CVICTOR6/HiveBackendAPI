@@ -2,7 +2,7 @@ package com.example.hive.service.implementation;
 
 import com.example.hive.constant.TransactionStatus;
 import com.example.hive.dto.request.PayStackPaymentRequest;
-import com.example.hive.dto.request.TaskerPaymentRequest;
+import com.example.hive.dto.request.FundWalletRequest;
 import com.example.hive.dto.response.PayStackResponse;
 import com.example.hive.dto.response.VerifyTransactionResponse;
 import com.example.hive.entity.*;
@@ -42,7 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final EscrowWalletRepository escrowWalletRepository;
 
     @Override
-    public PayStackResponse initiatePaymentAndSaveToPaymentLog(TaskerPaymentRequest taskerPaymentRequest, Principal principal) throws Exception {
+    public PayStackResponse initiatePaymentAndSaveToPaymentLog(FundWalletRequest taskerPaymentRequest, Principal principal) throws Exception {
 
         // get logged-in user and check if they are a tasker
         User user = verifyAndGetTasker(principal);
@@ -91,21 +91,22 @@ public class PaymentServiceImpl implements PaymentService {
 
         var status = verifyTransactionResponse.getData().getStatus();
         var amountPaid = BigDecimal.valueOf(verifyTransactionResponse.getData().getAmount());
-        var amountForTask = paymentLog.getAmount();
+        var amountToFund = paymentLog.getAmount();
 
         if (status.equals("failed")){
             paymentLog.setTransactionStatus(TransactionStatus.FAILED);
         return verifyTransactionResponse;
         }
 
+
         if (status.equals("success")) {
 
-            if (!(amountPaid.compareTo(amountForTask)==0)){ throw new BadRequestException("Invalid amount was paid for");}
-
+            if (!(amountPaid.compareTo(amountToFund)==0)){ throw new BadRequestException("Invalid amount was paid for");}
             verifyTransactionResponse.setPaymentLogId(paymentLog.getPaymentLogId());
             paymentLog.setTransactionStatus(TransactionStatus.SUCCESS);
             paymentLogRepository.save(paymentLog);
 
+            walletService.fundTaskerWallet(tasker, amountToFund);
         } else {
             throw new CustomException("Transaction failed");
         }
@@ -121,7 +122,7 @@ public class PaymentServiceImpl implements PaymentService {
         return user;
     }
 
-    private void saveToPaymentLog(PayStackResponse payStackResponse, User user, TaskerPaymentRequest taskerPaymentRequest) {
+    private void saveToPaymentLog(PayStackResponse payStackResponse, User user, FundWalletRequest taskerPaymentRequest) {
         PaymentLog paymentLog = new PaymentLog();
         paymentLog.setTaskerDepositor(user);
         paymentLog.setTransactionDate(LocalDateTime.now().toString());

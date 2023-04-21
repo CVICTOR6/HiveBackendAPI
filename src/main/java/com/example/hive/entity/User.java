@@ -23,8 +23,8 @@ public class User extends AuditEntity {
     private String email;
     @Column(name = "phone_number")
     private String phoneNumber;
-    @Column(name = "valid_id")
-    private String validId;
+//    @Column(name = "valid_id")
+//    private String validId;
     private String address;
     private String password;
     private Boolean isVerified = false;

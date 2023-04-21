@@ -45,9 +45,9 @@ public class UserRegistrationRequestDto {
     private Role role;
 
 //    @NotBlank(message = "validId field cannot be empty")
-    @JsonIgnore
-    private MultipartFile validId;
-    private String validIdUrl;
+//    @JsonIgnore
+//    private MultipartFile validId;
+//    private String validIdUrl;
 
     //    @NotBlank(message = "address field cannot be null")
     private String address;
